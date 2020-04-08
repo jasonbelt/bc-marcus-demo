@@ -1,0 +1,50 @@
+import <std_connector.camkes>;
+import <global-connectors.camkes>;
+import <TimeServer/TimeServer.camkes>;;
+import "components/TempSensor_i/TempSensor_i.camkes";
+import "components/TempControl_i/TempControl_i.camkes";
+import "components/Fan_i/Fan_i.camkes";
+import "components/sb_Monitors/sb_fan_fanCmd_Monitor/sb_fan_fanCmd_Monitor.camkes";
+import "components/sb_Monitors/sb_tempControl_currentTemp_Monitor/sb_tempControl_currentTemp_Monitor.camkes";
+import "components/sb_Monitors/sb_tempControl_fanAck_Monitor/sb_tempControl_fanAck_Monitor.camkes";
+import "components/sb_Monitors/sb_tempControl_tempChanged_Monitor/sb_tempControl_tempChanged_Monitor.camkes";
+import "components/dispatch_periodic/dispatch_periodic.camkes";
+
+assembly {
+  composition {
+    component TempSensor_i tempSensor;
+    component TempControl_i tempControl;
+    component Fan_i fan;
+    component sb_fan_fanCmd_Monitor sb_fan_fancmd_monitor;
+    component sb_tempControl_currentTemp_Monitor sb_tempcontrol_currenttemp_monitor;
+    component sb_tempControl_fanAck_Monitor sb_tempcontrol_fanack_monitor;
+    component sb_tempControl_tempChanged_Monitor sb_tempcontrol_tempchanged_monitor;
+    component dispatch_periodic dispatch_periodic_inst;
+    component TimeServer time_server;
+
+    connection seL4Notification conn1(from dispatch_periodic_inst.sb_tempSensor_periodic_dispatch_notification, to tempSensor.sb_periodic_dispatch_notification);
+    connection seL4RPCCall conn2(from tempSensor.sb_currentTemp0, to sb_tempcontrol_currenttemp_monitor.mon);
+    connection seL4RPCCall conn3(from tempControl.sb_currentTemp, to sb_tempcontrol_currenttemp_monitor.mon);
+    connection seL4Notification conn4(from sb_tempcontrol_currenttemp_monitor.monsig, to tempControl.sb_currentTemp_notification);
+    connection seL4RPCCall conn5(from tempSensor.sb_tempChanged0, to sb_tempcontrol_tempchanged_monitor.mon_send);
+    connection seL4RPCCall conn6(from tempControl.sb_tempChanged, to sb_tempcontrol_tempchanged_monitor.mon_receive);
+    connection seL4Notification conn7(from sb_tempcontrol_tempchanged_monitor.monsig, to tempControl.sb_tempChanged_notification);
+    connection seL4RPCCall conn8(from tempControl.sb_fanCmd0, to sb_fan_fancmd_monitor.mon);
+    connection seL4RPCCall conn9(from fan.sb_fanCmd, to sb_fan_fancmd_monitor.mon);
+    connection seL4Notification conn10(from sb_fan_fancmd_monitor.monsig, to fan.sb_fanCmd_notification);
+    connection seL4RPCCall conn11(from fan.sb_fanAck0, to sb_tempcontrol_fanack_monitor.mon);
+    connection seL4RPCCall conn12(from tempControl.sb_fanAck, to sb_tempcontrol_fanack_monitor.mon);
+    connection seL4Notification conn13(from sb_tempcontrol_fanack_monitor.monsig, to tempControl.sb_fanAck_notification);
+    connection seL4TimeServer conn14(from dispatch_periodic_inst.timer, to time_server.the_timer);
+    connection seL4GlobalAsynchCallback conn15(from time_server.timer_notification, to dispatch_periodic_inst.timer_complete);
+  }
+
+  configuration {
+    tempSensor._stack_size = 65536;
+    tempControl._stack_size = 65536;
+    fan._stack_size = 65536;
+    time_server.timers_per_client = 1;
+    dispatch_periodic_inst.timer_attributes = 1;
+    dispatch_periodic_inst.priority = 201;
+  }
+}

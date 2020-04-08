@@ -1,0 +1,13 @@
+#include <TempControl_i_adapter.h>
+
+Unit bc_BuildingControl_TempControl_i_adapter_initialiseArchitecture() {
+  bc_BuildingControlDemo_i_Instance_tcp_tempControl_tempControl_initialiseArchitecture(SF_LAST);
+}
+
+Unit bc_BuildingControl_TempControl_i_adapter_initialiseEntryPoint() {
+  bc_BuildingControlDemo_i_Instance_tcp_tempControl_tempControl_initialiseEntryPoint(SF_LAST);
+}
+
+Unit bc_BuildingControl_TempControl_i_adapter_computeEntryPoint() {
+  bc_BuildingControlDemo_i_Instance_tcp_tempControl_tempControl_computeEntryPoint(SF_LAST);
+}

@@ -1,0 +1,6 @@
+procedure sb_Monitor_BuildingControl__FanAck_1 {
+  include <sb_proc_types.h>;
+  bool is_empty();
+  bool enqueue(refin union_art_DataContent m);
+  bool dequeue(out union_art_DataContent m);
+};

@@ -1,0 +1,6 @@
+procedure sb_Monitor_BuildingControl__Temperature_i {
+  include <sb_proc_types.h>;
+  bool is_empty();
+  bool read(out union_art_DataContent m);
+  bool write(refin union_art_DataContent m);
+};
